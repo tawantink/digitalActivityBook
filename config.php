@@ -1,8 +1,8 @@
 <?php
-$host = 'localhost'; // ชื่อโฮสต์
-$db   = 'araiwa'; // ชื่อฐานข้อมูล
-$user = 'dab_ac'; // ชื่อผู้ใช้ MySQL
-$pass = 'Gwfj[WyZW[6II9pi'; // รหัสผ่าน MySQL
+$host = 'xefi550t7t6tjn36.cbetxkdyhwsb.us-east-1.rds.amazonaws.com'; // ชื่อโฮสต์
+$db   = 'llqkum01lyw1bhs6'; // ชื่อฐานข้อมูล
+$user = 'vtbutzp63stromir'; // ชื่อผู้ใช้ MySQL
+$pass = 'eacwlellzq8coyp1'; // รหัสผ่าน MySQL
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
