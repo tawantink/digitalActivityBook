@@ -1,5 +1,5 @@
 {
-    "name": "my-vendor/dab",
-    "description": "Webapp DAB",
-    "require": {}
+  "require": {
+    "php": "^8.0"
   }
+}
