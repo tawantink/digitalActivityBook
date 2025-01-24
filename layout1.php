@@ -61,12 +61,25 @@
         .today {
             background-color: #ffeb3b;
         }
-        button {
-            width: 100%;
+        .button1 {
+            width: 150px;
             height: 100%;
-            border: none;
+            border-radius: 10px;
             background: none;
             cursor: pointer;
+            padding: 5px;
+            margin-bottom: 20px;
+            float: left;
+        }
+        .button2 {
+            width: 150px;
+            height: 100%;
+            border-radius: 10px;
+            background: none;
+            cursor: pointer;
+            padding: 5px;
+            margin-bottom: 20px;
+            float: right;
         }
         button:hover {
             background-color: #f0f8ff;
