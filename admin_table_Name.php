@@ -1,40 +1,35 @@
 <?php
-// การเชื่อมต่อฐานข้อมูล
-require 'configCon.php';
+// filepath: /c:/xampp/htdocs/pj/digitalActivityBook/admin_table_Name.php
+include 'configCon.php';
 
-// ตรวจสอบว่าผู้ใช้เลือกห้องเรียนอะไร (ค่าเริ่มต้นเป็น "ปวส.2/1")
-$selected_class = isset($_POST['class']) ? $_POST['class'] : 'ปวส.2/1';
+// รับค่าการค้นหาจากฟอร์ม
+$search_username = isset($_GET['search_username']) ? $_GET['search_username'] : '';
+$search_class = isset($_GET['search_class']) ? $_GET['search_class'] : '';
+$search_department = isset($_GET['search_department']) ? $_GET['search_department'] : '';
 
-// ตรวจสอบว่าค่าที่ส่งมานั้นถูกต้อง
-$valid_classes = ['ปวส.2/1', 'ปวส.2/2', 'ปวส.2/3'];
-if (!in_array($selected_class, $valid_classes)) {
-    $selected_class = 'ปวส.2/1';
+// ดึงค่าที่เป็นไปได้สำหรับ class และ department จากฐานข้อมูล
+$class_options = $conn->query("SELECT DISTINCT class FROM users ORDER BY class");
+$department_options = $conn->query("SELECT DISTINCT department FROM users ORDER BY department");
+
+// ดึงข้อมูลผู้ใช้จากฐานข้อมูล
+$sql = "SELECT id, username, fullname, class, department, points FROM users WHERE 1=1";
+
+if ($search_username) {
+    $sql .= " AND username LIKE '%$search_username%'";
+}
+if ($search_class) {
+    $sql .= " AND class = '$search_class'";
+}
+if ($search_department) {
+    $sql .= " AND department = '$search_department'";
 }
 
-// ใช้ prepared statement เพื่อดึงข้อมูลจากฐานข้อมูล
-$stmt = $conn->prepare("SELECT id, username, fullname, Ac_point FROM users WHERE class = ?");
-$stmt->bind_param("s", $selected_class); // กำหนดค่าของ $selected_class
-$stmt->execute();
-$result = $stmt->get_result();
+$result = $conn->query($sql);
+?>
 
-// ตรวจสอบว่าได้รับค่าจากฟอร์มเพิ่มคะแนนหรือไม่
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_points'])) {
-    // ตรวจสอบว่ามีค่าพิเศษเพิ่มคะแนนและการส่งฟอร์มมีค่าที่ถูกต้อง
-    if (!empty($_POST['additional_points']) && isset($_POST['student_id'])) {
-        $student_id = $_POST['student_id'];
-        $additional_points = $_POST['additional_points'];
-        
-        // เพิ่มคะแนนกิจกรรมให้กับนักศึกษา
-        $update_stmt = $conn->prepare("UPDATE users SET Ac_point = Ac_point + ? WHERE id = ?");
-        $update_stmt->bind_param("ii", $additional_points, $student_id);
-        $update_stmt->execute();
-        $update_stmt->close();
-
-        // หลังจากอัปเดตแล้วรีเฟรชหน้าเพื่อป้องกันการส่งฟอร์มซ้ำ
-        header("Location: " . $_SERVER['PHP_SELF']);
-        exit;
-    }
-}
+<?php
+$title = "รายชื่อนักศึกษา";
+include('layout.php');
 ?>
 
 <!DOCTYPE html>
@@ -42,14 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_points'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Table Student Name</title>
-    <link rel="icon" href="static/ytc.png" type="image/x-icon">
-    <link rel="shortcut icon" href="static/ytc.png" type="image/x-icon">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="css/tooltip.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/footer.css">
     <style>
         @font-face {
@@ -60,88 +48,112 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_points'])) {
         * {
             font-family: ma;
         }
-        /* กำหนดสไตล์ให้กับตาราง */
-        table {
-            width: 100%;
-            border-collapse: collapse;
+
+        .table-responsive {
             margin-top: 20px;
         }
-        table, th, td {
-            border: 1px solid black;
+
+        .form-inline {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
         }
-        th, td {
-            padding: 8px;
-            text-align: left;
+
+        .form-inline label, .form-inline input, .form-inline select, .form-inline button {
+            margin: 5px 0;
         }
-        th {
-            background-color: #f2f2f2;
-            text-align: center;
+
+        @media (max-width: 768px) {
+            .form-inline label, .form-inline input, .form-inline select, .form-inline button {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+
+        tr {
+            cursor: pointer; /* ให้ทั้งแถวสามารถกดได้ */
         }
         tr:hover {
-            background-color: #B9B9B9FF;
+            background-color: #B9B9B9FF; /* เปลี่ยนสีเมื่อ hover */
         }
     </style>
+    <script>
+        // ฟังก์ชันสำหรับนำผู้ใช้ไปยังหน้าโปรไฟล์เมื่อคลิกที่แถว
+        function goToProfile(userId) {
+            window.location.href = 'user_profile.php?id=' + userId;
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <h1>รายชื่อนักศึกษา</h1>
-        
-        <!-- ฟอร์มเลือกห้องเรียน -->
-        <form method="POST" action="">
-            <label for="class">เลือกห้องเรียน:</label>
-            <select name="class" id="class" onchange="this.form.submit()">
-                <option value="ปวส.2/1" <?php if ($selected_class == 'ปวส.2/1') echo 'selected'; ?>>ปวส.2/1</option>
-                <option value="ปวส.2/2" <?php if ($selected_class == 'ปวส.2/2') echo 'selected'; ?>>ปวส.2/2</option>
-                <option value="ปวส.2/3" <?php if ($selected_class == 'ปวส.2/3') echo 'selected'; ?>>ปวส.2/3</option>
+
+        <!-- ฟอร์มค้นหา -->
+        <form method="GET" action="admin_table_Name.php" class="form-inline">
+            <label for="search_username">รหัสนักศึกษา :</label>
+            <input type="text" id="search_username" name="search_username" value="<?php echo htmlspecialchars($search_username); ?>" class="form-control">
+            <label for="search_class">ชั้นปี :</label>
+            <select id="search_class" name="search_class" class="form-control">
+                <option value="">-- เลือกชั้นปี --</option>
+                <?php while ($row = $class_options->fetch_assoc()): ?>
+                    <option value="<?php echo htmlspecialchars($row['class']); ?>" <?php if ($row['class'] == $search_class) echo 'selected'; ?>>
+                        <?php echo htmlspecialchars($row['class']); ?>
+                    </option>
+                <?php endwhile; ?>
             </select>
+            <label for="search_department">แผนกวิชา :</label>
+            <select id="search_department" name="search_department" class="form-control">
+                <option value="">-- เลือกแผนกวิชา --</option>
+                <?php while ($row = $department_options->fetch_assoc()): ?>
+                    <option value="<?php echo htmlspecialchars($row['department']); ?>" <?php if ($row['department'] == $search_department) echo 'selected'; ?>>
+                        <?php echo htmlspecialchars($row['department']); ?>
+                    </option>
+                <?php endwhile; ?>
+            </select>
+            <button type="submit" class="btn btn-primary">ค้นหา</button>
+            <a href="admin_table_Name.php" class="btn btn-secondary">เคลียร์</a>
         </form>
 
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 30px;">ลำดับ</th>
-                    <th style="width: 200px;">ชื่อผู้ใช้</th>
-                    <th style="width: 500px;">ชื่อเต็ม</th>
-                    <th style="width: 100px;">แต้มกิจกรรม</th>
-                    <th style="width: 150px;">เพิ่มคะแนน</th>
-                </tr>
-            </thead>
-            <tbody>
-            <?php
-                $serial_number = 1; // กำหนดตัวแปรนับลำดับเริ่มต้น
-                if ($result->num_rows > 0) {
-                    // แสดงผลข้อมูลในแต่ละแถว
-                    while ($row = $result->fetch_assoc()) {
-                        echo "<tr>
-                            <td style='text-align: center;'>{$serial_number}</td> <!-- ใช้ตัวแปรลำดับแทน id -->
-                            <td>{$row['username']}</td>
-                            <td>{$row['fullname']}</td>
-                            <td style='text-align: center;'>{$row['Ac_point']}</td>
-                            <td>
-                                <!-- ฟอร์มเพิ่มคะแนนกิจกรรม -->
-                                <form method='POST' action=''>
-                                    <input type='hidden' name='student_id' value='{$row['id']}'>
-                                    <input style='width: 80px;' type='number' name='additional_points' min='1' required>
-                                    <button type='submit' name='add_points' class='btn btn-success btn-sm'>เพิ่มคะแนน</button>
-                                </form>
-                            </td>
-                        </tr>";
-                        $serial_number++; // เพิ่มค่าลำดับ
-                    }
-                } else {
-                    echo "<tr><td colspan='5'>ไม่มีข้อมูล</td></tr>";
-                }
-            ?>
+        <!-- แสดงผลการค้นหา -->
+        <?php if ($search_username || $search_class || $search_department): ?>
+            <p>ผลการค้นหาสำหรับ: 
+                <?php if ($search_username): ?>รหัสนักศึกษา: <?php echo htmlspecialchars($search_username); ?><?php endif; ?>
+                <?php if ($search_class): ?>, ชั้นปี: <?php echo htmlspecialchars($search_class); ?><?php endif; ?>
+                <?php if ($search_department): ?>, แผนกวิชา: <?php echo htmlspecialchars($search_department); ?><?php endif; ?>
+            </p>
+        <?php endif; ?>
 
-            </tbody>
-        </table>
+        <?php if ($result->num_rows > 0): ?>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="thead-light">
+                        <tr class="text-center">
+                            <th>ลำดับ</th>
+                            <th>รหัสนักศึกษา</th>
+                            <th>ชื่อ</th>
+                            <th>ชั้นปี</th>
+                            <th>แผนกวิชา</th>
+                            <th>แต้มกิจกรรม</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = $result->fetch_assoc()): ?>
+                            <tr class="text-center" onclick="goToProfile(<?php echo $row['id']; ?>)">
+                                <td><?php echo htmlspecialchars($row['id']); ?></td>
+                                <td><?php echo htmlspecialchars($row['username']); ?></td>
+                                <td class="text-start"><?php echo htmlspecialchars($row['fullname']); ?></td>
+                                <td><?php echo htmlspecialchars($row['class']); ?></td>
+                                <td><?php echo htmlspecialchars($row['department']); ?></td>
+                                <td><?php echo htmlspecialchars($row['points']); ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php else: ?>
+            <p>No users found.</p>
+        <?php endif; ?>
     </div>
 </body>
-<?php include('footer.php'); ?>
 </html>
-
-<?php
-// ปิดการเชื่อมต่อฐานข้อมูล
-$stmt->close();
-$conn->close();
-?>
+<?php include('footer.php'); ?>
