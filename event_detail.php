@@ -28,12 +28,16 @@ $conn->close();
 
 $title = "รายละเอียดกิจกรรม: " . htmlspecialchars($event['event_name']);
 include('layout.php');
+header("Content-Security-Policy: camera 'self';");
+
 ?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="camera 'self'">
+
     <title><?= $title ?></title>
     <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
     <style>
@@ -73,7 +77,9 @@ include('layout.php');
         }
 
         document.getElementById('start-scan').addEventListener('click', function() {
-            document.getElementById('reader').style.display = 'block';
+        document.getElementById('reader').style.display = 'block';
+
+        try {
             let html5QrcodeScanner = new Html5QrcodeScanner(
                 "reader", 
                 { 
@@ -84,7 +90,13 @@ include('layout.php');
                 }
             );
             html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-        });
+        } catch (error) {
+            console.error("Error initializing QR Scanner:", error);
+            alert("ไม่สามารถเปิดกล้องได้: " + error.message);
+        }
+    });
+
+        
     </script>
 </body>
 <?php include('footer.php'); ?>
