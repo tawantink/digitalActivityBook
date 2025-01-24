@@ -1,15 +1,19 @@
 <?php
-// รวมไฟล์ configCon.php เพื่อเชื่อมต่อฐานข้อมูล
+// filepath: /c:/xampp/htdocs/pj/digitalActivityBook/show_events.php
 include 'configCon.php';
 
-// คำสั่ง SQL เพื่อดึงข้อมูลจากตาราง events
-$sql = "SELECT id, event_date, event_name, event_descrip, event_point FROM events";
+// คำสั่ง SQL เพื่อดึงข้อมูลจากตาราง events และเรียงลำดับตามวันที่จากน้อยไปมาก
+$sql = "SELECT id, event_date, event_name, event_descrip, event_point FROM events ORDER BY event_date ASC";
 $result = $conn->query($sql);
 ?>
 
 <!DOCTYPE html>
 <html lang="th">
-<?php include('layout.php'); ?>
+<?php 
+$title = "Activity Program";
+include('layout.php'); 
+?>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,12 +28,35 @@ $result = $conn->query($sql);
         }
         th, td {
             padding: 8px;
-            text-align: left;
+            text-align: center;
         }
         th {
             background-color: #f2f2f2;
         }
+        tr {
+            cursor: pointer; /* ให้ทั้งแถวสามารถกดได้ */
+        }
+        tr:hover {
+            background-color: #B9B9B9FF; /* เปลี่ยนสีเมื่อ hover */
+        }
+        .action-btn {
+            padding: 5px 10px;
+            margin: 0 2px;
+            border: none;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
     </style>
+    <script>
+        // ฟังก์ชันสำหรับนำผู้ใช้ไปยังหน้ารายละเอียดเมื่อคลิกที่แถว
+        function goToDetail(eventId) {
+            window.location.href = 'event_detail.php?id=' + eventId;
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -37,35 +64,38 @@ $result = $conn->query($sql);
         <table>
             <thead>
                 <tr>
-                    <th style="text-align: center;">ลำดับ</th> <!-- เปลี่ยนจาก ID เป็นลำดับ -->
-                    <th style="text-align: center;">วันที่</th>
-                    <th style="text-align: center;">ชื่อกิจกรรม</th>
-                    <th style="text-align: center;">รายละเอียด</th>
-                    <th style="text-align: center;">คะแนน</th>
+                    <th>ลำดับ</th>
+                    <th>วันที่</th>
+                    <th>ชื่อกิจกรรม</th>
+                    <th>รายละเอียด</th>
+                    <th>คะแนน</th>
+                    <th>จัดการ</th>
                 </tr>
             </thead>
             <tbody>
                 <?php
-                // เริ่มต้นลำดับ
                 $index = 1;
 
                 if ($result->num_rows > 0) {
                     while ($row = $result->fetch_assoc()) {
-                        // แปลงวันที่จาก yyyy-mm-dd เป็น dd/mm/yyyy
                         $dateObj = DateTime::createFromFormat('Y-m-d', $row['event_date']);
                         $formattedDate = $dateObj->format('d/m/Y');
 
-                        echo "<tr>";
-                        echo "<td style='text-align: center;'>" . $index . "</td>"; // ใช้ลำดับแทน ID
-                        echo "<td style='text-align: center;'>" . $formattedDate . "</td>"; // แสดงวันที่ในรูปแบบ dd/mm/yyyy
-                        echo "<td>" . $row["event_name"] . "</td>";
-                        echo "<td>" . $row["event_descrip"] . "</td>";
-                        echo "<td style='text-align: center;'>" . $row["event_point"] . "</td>";
+                        echo "<tr onclick='goToDetail(" . $row["id"] . ")'>"; // ใช้ onclick เรียกฟังก์ชัน
+                        echo "<td>" . $index . "</td>";
+                        echo "<td>" . $formattedDate . "</td>";
+                        echo "<td>" . htmlspecialchars($row["event_name"]) . "</td>";
+                        echo "<td>" . htmlspecialchars($row["event_descrip"]) . "</td>";
+                        echo "<td>" . htmlspecialchars($row["event_point"]) . "</td>";
+                        echo "<td>";
+                        echo "<a href='delete_event.php?id=" . $row["id"] . "' class='action-btn delete-btn' onclick='return confirm(\"คุณต้องการลบกิจกรรมนี้หรือไม่?\")'>ลบ</a>";
+                        echo "</td>";
                         echo "</tr>";
-                        $index++; // เพิ่มค่าลำดับในแต่ละรอบ
+
+                        $index++;
                     }
                 } else {
-                    echo "<tr><td colspan='5'>ไม่มีข้อมูล</td></tr>";
+                    echo "<tr><td colspan='6'>ไม่มีข้อมูล</td></tr>";
                 }
                 ?>
             </tbody>
@@ -76,6 +106,5 @@ $result = $conn->query($sql);
 </html>
 
 <?php
-// ปิดการเชื่อมต่อ
 $conn->close();
 ?>
