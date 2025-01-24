@@ -58,25 +58,31 @@ include('layout.php');
         <!-- ปุ่มสำหรับเปิดกล้อง -->
         <h2>สแกน QR Code</h2>
         <button id="start-scan" class="btn btn-success">เปิดกล้องเพื่อสแกน QR Code</button>
+        <p>กรุณาถือโทรศัพท์ให้มั่นคง และจัด QR Code ให้อยู่ในกรอบ</p>
         <div id="reader"></div>
         <p id="result"></p>
     </div>
 
     <script>
         function onScanSuccess(decodedText, decodedResult) {
-            // Handle the scanned code as you like, for example:
             document.getElementById('result').innerText = `Scanned result: ${decodedText}`;
         }
 
         function onScanFailure(error) {
-            // Handle scan failure, usually better to ignore and keep scanning.
             console.warn(`QR error = ${error}`);
         }
 
         document.getElementById('start-scan').addEventListener('click', function() {
             document.getElementById('reader').style.display = 'block';
             let html5QrcodeScanner = new Html5QrcodeScanner(
-                "reader", { fps: 10, qrbox: 250 });
+                "reader", 
+                { 
+                    fps: 10, 
+                    qrbox: function(viewfinderWidth, viewfinderHeight) {
+                        return Math.min(viewfinderWidth, viewfinderHeight) * 0.7;
+                    }
+                }
+            );
             html5QrcodeScanner.render(onScanSuccess, onScanFailure);
         });
     </script>
