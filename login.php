@@ -37,6 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+    <link rel="stylesheet" href="css/formlogin1.css">
+    </head>
 <?php
 $title = "DAB Login";
 include('layout.php'); // เรียกใช้ Layout
