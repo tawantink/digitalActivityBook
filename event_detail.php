@@ -41,6 +41,7 @@ include('layout.php');
             width: 100%;
             max-width: 600px;
             margin: auto;
+            display: none; /* ซ่อนกล้องไว้ก่อน */
         }
     </style>
 </head>
@@ -54,8 +55,9 @@ include('layout.php');
         <a href="delete_event.php?id=<?= $event['id'] ?>" class="btn btn-danger" onclick="return confirm('คุณต้องการลบกิจกรรมนี้หรือไม่?')">ลบ</a>
         <a href="show_events.php" class="btn btn-secondary">Close</a>
 
-        <!-- ส่วนสำหรับสแกน QR code -->
+        <!-- ปุ่มสำหรับเปิดกล้อง -->
         <h2>สแกน QR Code</h2>
+        <button id="start-scan" class="btn btn-success">เปิดกล้องเพื่อสแกน QR Code</button>
         <div id="reader"></div>
         <p id="result"></p>
     </div>
@@ -71,9 +73,12 @@ include('layout.php');
             console.warn(`QR error = ${error}`);
         }
 
-        let html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", { fps: 10, qrbox: 250 });
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        document.getElementById('start-scan').addEventListener('click', function() {
+            document.getElementById('reader').style.display = 'block';
+            let html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader", { fps: 10, qrbox: 250 });
+            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        });
     </script>
 </body>
 <?php include('footer.php'); ?>
