@@ -2,6 +2,14 @@
 // filepath: /c:/xampp/htdocs/pj/digitalActivityBook/event_detail.php
 include 'configCon.php';
 
+if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
+    $redirect = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+    header('HTTP/1.1 301 Moved Permanently');
+    header('Location: ' . $redirect);
+    exit();
+}
+
+
 // รับค่าจาก URL
 $id = isset($_GET['id']) ? $_GET['id'] : null;
 if (!$id) {
@@ -75,11 +83,21 @@ include('layout.php');
         }
 
         document.getElementById('start-scan').addEventListener('click', function() {
-            document.getElementById('reader').style.display = 'block';
-            let html5QrcodeScanner = new Html5QrcodeScanner(
-                "reader", { fps: 10, qrbox: 250 });
-            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-        });
+        document.getElementById('reader').style.display = 'block';
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                console.log("Camera access granted!");
+                // ปิดการใช้ stream หากไม่ต้องการ
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+            })
+            .catch(function(error) {
+                console.error("Camera access denied:", error);
+                alert("ไม่สามารถเข้าถึงกล้องได้: " + error.message);
+            });
+});
+
     </script>
 </body>
 <?php include('footer.php'); ?>
