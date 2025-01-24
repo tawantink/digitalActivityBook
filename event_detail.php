@@ -28,16 +28,13 @@ $conn->close();
 
 $title = "รายละเอียดกิจกรรม: " . htmlspecialchars($event['event_name']);
 include('layout.php');
-header("Content-Security-Policy: camera 'self';");
-
 ?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="camera 'self'">
-
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; connect-src 'self'; img-src 'self'; style-src 'self' 'unsafe-inline'; media-src 'self'">
     <title><?= $title ?></title>
     <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
     <style>
@@ -62,41 +59,27 @@ header("Content-Security-Policy: camera 'self';");
         <!-- ปุ่มสำหรับเปิดกล้อง -->
         <h2>สแกน QR Code</h2>
         <button id="start-scan" class="btn btn-success">เปิดกล้องเพื่อสแกน QR Code</button>
-        <p>กรุณาถือโทรศัพท์ให้มั่นคง และจัด QR Code ให้อยู่ในกรอบ</p>
         <div id="reader"></div>
         <p id="result"></p>
     </div>
 
     <script>
         function onScanSuccess(decodedText, decodedResult) {
+            // Handle the scanned code as you like, for example:
             document.getElementById('result').innerText = `Scanned result: ${decodedText}`;
         }
 
         function onScanFailure(error) {
+            // Handle scan failure, usually better to ignore and keep scanning.
             console.warn(`QR error = ${error}`);
         }
 
         document.getElementById('start-scan').addEventListener('click', function() {
-        document.getElementById('reader').style.display = 'block';
-
-        try {
+            document.getElementById('reader').style.display = 'block';
             let html5QrcodeScanner = new Html5QrcodeScanner(
-                "reader", 
-                { 
-                    fps: 10, 
-                    qrbox: function(viewfinderWidth, viewfinderHeight) {
-                        return Math.min(viewfinderWidth, viewfinderHeight) * 0.7;
-                    }
-                }
-            );
+                "reader", { fps: 10, qrbox: 250 });
             html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-        } catch (error) {
-            console.error("Error initializing QR Scanner:", error);
-            alert("ไม่สามารถเปิดกล้องได้: " + error.message);
-        }
-    });
-
-        
+        });
     </script>
 </body>
 <?php include('footer.php'); ?>
