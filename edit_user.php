@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $Ac_point = $_POST['Ac_point'];
 
     // อัปเดตข้อมูลผู้ใช้ในฐานข้อมูล
-    $sql_update = "UPDATE users SET username = ?, fullname = ?, class = ?, std_qr_code = ?, Ac_point = ? WHERE id = ?";
+    $sql_update = "UPDATE users SET username = ?, fullname = ? WHERE id = ?";
     $stmt_update = $conn->prepare($sql_update);
     $stmt_update->bind_param("ssssii", $username, $fullname, $class, $std_qr_code, $Ac_point, $user_id);
     if ($stmt_update->execute()) {
