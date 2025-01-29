@@ -12,7 +12,7 @@ $class_options = $conn->query("SELECT DISTINCT class FROM users ORDER BY class")
 $department_options = $conn->query("SELECT DISTINCT department FROM users ORDER BY department");
 
 // ดึงข้อมูลผู้ใช้จากฐานข้อมูล
-$sql = "SELECT id, username, fullname, class, department, points FROM users WHERE 1=1";
+$sql = "SELECT user_id, username, fullname, class, department, points FROM users WHERE 1=1";
 
 if ($search_username) {
     $sql .= " AND username LIKE '%$search_username%'";
@@ -80,7 +80,7 @@ include('layout.php');
     <script>
         // ฟังก์ชันสำหรับนำผู้ใช้ไปยังหน้าโปรไฟล์เมื่อคลิกที่แถว
         function goToProfile(userId) {
-            window.location.href = 'user_profile.php?id=' + userId;
+            window.location.href = 'user_profile.php?user_id=' + userId;
         }
     </script>
 </head>
@@ -138,8 +138,8 @@ include('layout.php');
                     </thead>
                     <tbody>
                         <?php while ($row = $result->fetch_assoc()): ?>
-                            <tr class="text-center" onclick="goToProfile(<?php echo $row['id']; ?>)">
-                                <td><?php echo htmlspecialchars($row['id']); ?></td>
+                            <tr class="text-center" onclick="goToProfile(<?php echo $row['user_id']; ?>)">
+                                <td><?php echo htmlspecialchars($row['user_id']); ?></td>
                                 <td><?php echo htmlspecialchars($row['username']); ?></td>
                                 <td class="text-start"><?php echo htmlspecialchars($row['fullname']); ?></td>
                                 <td><?php echo htmlspecialchars($row['class']); ?></td>
