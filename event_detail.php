@@ -2,11 +2,10 @@
 // filepath: /c:/xampp/htdocs/pj/digitalActivityBook/event_detail.php
 include 'configCon.php';
 
-
 // รับค่าจาก URL
 $id = isset($_GET['event_id']) ? $_GET['event_id'] : null;
 if (!$id) {
-    echo "Invalid request! The 'event_id' parameter is missing.";
+    echo "Invalid request! The 'id' parameter is missing.";
     exit;
 }
 
@@ -35,15 +34,19 @@ include('layout.php');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; connect-src 'self'; img-src 'self'; style-src 'self' 'unsafe-inline'; media-src 'self'">
     <title><?= $title ?></title>
-    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
     <style>
-        #reader {
-            width: 100%;
-            max-width: 600px;
-            margin: auto;
-            display: none; /* ซ่อนกล้องไว้ก่อน */
+        video, canvas {
+            display: block;
+            margin: 10px auto;
+            max-width: 100%;
+            height: auto;
+        }
+        .container {
+            padding: 15px;
+        }
+        .btn {
+            margin: 5px 0;
         }
     </style>
 </head>
@@ -60,37 +63,91 @@ include('layout.php');
         <!-- ปุ่มสำหรับเปิดกล้อง -->
         <h2>สแกน QR Code</h2>
         <button id="start-scan" class="btn btn-success">เปิดกล้องเพื่อสแกน QR Code</button>
-        <div id="reader"></div>
-        <p id="result"></p>
+        <video id="webcam" width="640" height="480" autoplay></video>
+        <canvas id="qrCanvas" width="640" height="480" style="display: none;"></canvas>
+        <p id="result">QR Code Data: <strong>None</strong></p>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <script>
-        function onScanSuccess(decodedText, decodedResult) {
-            // Handle the scanned code as you like, for example:
-            document.getElementById('result').innerText = `Scanned result: ${decodedText}`;
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('qrCanvas');
+        const context = canvas.getContext('2d');
+        const result = document.getElementById('result');
+        let scanning = false;
+
+        function onScanSuccess(decodedText) {
+            result.innerHTML = `QR Code Data: <strong>${decodedText}</strong>`;
+            alert(`QR Code Scanned: ${decodedText}`);
+
+            // ส่งข้อมูลไปยังเซิร์ฟเวอร์เพื่อบันทึกในฐานข้อมูล
+            fetch('save_scan.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    event_id: <?= $event['event_id'] ?>,
+                    username_id: decodedText
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('บันทึกข้อมูลสำเร็จ');
+                } else {
+                    alert('บันทึกข้อมูลไม่สำเร็จ: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+            });
         }
 
-        function onScanFailure(error) {
-            // Handle scan failure, usually better to ignore and keep scanning.
-            console.warn(`QR error = ${error}`);
+        function scanQRCode() {
+            if (!scanning) return;
+
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const qrCode = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: "dontInvert",
+                });
+
+                if (qrCode) {
+                    scanning = false;
+                    onScanSuccess(qrCode.data);
+
+                    setTimeout(() => {
+                        scanning = true;
+                        scanQRCode();
+                    }, 3000);
+
+                    return;
+                }
+            }
+            requestAnimationFrame(scanQRCode);
         }
 
         document.getElementById('start-scan').addEventListener('click', function() {
-        document.getElementById('reader').style.display = 'block';
-
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function(stream) {
-                console.log("Camera access granted!");
-                // ปิดการใช้ stream หากไม่ต้องการ
-                const tracks = stream.getTracks();
-                tracks.forEach(track => track.stop());
-            })
-            .catch(function(error) {
-                console.error("Camera access denied:", error);
-                alert("ไม่สามารถเข้าถึงกล้องได้: " + error.message);
-            });
-});
-
+            document.getElementById('webcam').style.display = 'block';
+            scanning = true;
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(function (stream) {
+                    video.srcObject = stream;
+                    video.setAttribute("playsinline", true);
+                    video.play();
+                    scanQRCode();
+                })
+                .catch(function (error) {
+                    console.error("Error accessing webcam: ", error);
+                    alert("Could not access the webcam: " + error.message);
+                });
+        });
     </script>
 </body>
 <?php include('footer.php'); ?>
