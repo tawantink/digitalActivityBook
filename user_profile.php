@@ -3,14 +3,14 @@
 include 'configCon.php';
 
 // รับค่าจาก URL
-$user_id = isset($_GET['id']) ? $_GET['id'] : null;
+$user_id = isset($_GET['user_id']) ? $_GET['user_id'] : null;
 if (!$user_id) {
     echo "Invalid request! The 'id' parameter is missing.";
     exit;
 }
 
 // ดึงข้อมูลผู้ใช้จากฐานข้อมูล
-$sql = "SELECT * FROM users WHERE id = ?";
+$sql = "SELECT * FROM users WHERE user_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -24,32 +24,109 @@ if ($result->num_rows > 0) {
 }
 
 $stmt->close();
+
+// ดึงข้อมูลกิจกรรมจากตาราง event_history และ events
+$sql = "SELECT e.event_name, e.event_point, eh.check_status 
+        FROM history eh 
+        JOIN events e ON eh.event_id = e.event_id
+        WHERE eh.user_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$events_result = $stmt->get_result();
+
+$events = [];
+$new_points = 0;
+while ($row = $events_result->fetch_assoc()) {
+    $events[] = $row;
+    if ($row['check_status'] === 'true' || $row['check_status'] == 1) {
+        $new_points += $row['event_point']; // คำนวณเฉพาะแต้มใหม่
+    }
+}
+
+$stmt->close();
+
+// อัปเดตคะแนนรวม (เฉพาะแต้มใหม่)
+$update_sql = "UPDATE users SET points = ? WHERE user_id = ?";
+$updated_points = $new_points; // ใช้แต้มที่คำนวณใหม่แทนการบวกซ้ำ
+$update_stmt = $conn->prepare($update_sql);
+$update_stmt->bind_param("ii", $updated_points, $user_id);
+$update_stmt->execute();
+$update_stmt->close();
+
 $conn->close();
 ?>
-<?php include('layout.php'); ?>
+
+<?php 
+$title = "ข้อมูล : " . htmlspecialchars($user['username']);
+
+include('layout.php'); ?>
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile of <?= htmlspecialchars($user['username']) ?></title>
+    <style>
+        .status-true {
+            color: green;
+        }
+        .status-false {
+            color: red;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>Profile of <?= htmlspecialchars($user['username']) ?></h1>
-        <?php if ($user['avatar']): ?>
-            <p><img src="<?= htmlspecialchars($user['avatar']) ?>" alt="Avatar" width="100"></p>
-        <?php endif; ?>
-        <p><strong>รหัสนักศึกษา :</strong> <?= htmlspecialchars($user['username']) ?></p>
-        <p><strong>ชื่อ-นามสกุล :</strong> <?= htmlspecialchars($user['fullname']) ?></p>
-        <p><strong>ชั้นปี :</strong> <?= htmlspecialchars($user['class']) ?></p>
-        <p><strong>จำนวนแต้มกิจกรรม :</strong> <?= htmlspecialchars($user['points']) ?></p>
-        <?php if (!empty($user['std_qr_code'])): ?>
-            <p><strong>QR Code:</strong><br>
-            <img src="/pj/digitalActivityBook/<?= htmlspecialchars($user['std_qr_code']) ?>" alt="QR Code" width="100">
-            </p>
-        <?php endif; ?>
-        <a href="edit_user.php?id=<?= $user_id ?>" class="btn btn-primary">แก้ไขข้อมูล</a>
+        <div class="row">
+            <div class="col-4">
+                <?php if ($user['avatar']): ?>
+                <p><img src="<?= htmlspecialchars($user['avatar']) ?>" alt="Avatar" width="100"></p>
+                <?php endif; ?>
+                <p><strong>รหัสนักศึกษา :</strong> <?= htmlspecialchars($user['username']) ?></p>
+                <p><strong>ชื่อ-นามสกุล :</strong> <?= htmlspecialchars($user['fullname']) ?></p>
+                <p><strong>ชั้นปี :</strong> <?= htmlspecialchars($user['class']) ?></p>
+                <p><strong>แผนกวิชา :</strong> <?= htmlspecialchars($user['department']) ?></p>
+                <p><strong>จำนวนแต้มกิจกรรม :</strong> <?= htmlspecialchars($updated_points) ?></p>
+                <?php if (!empty($user['std_qr_code'])): ?>
+                    <p><strong>QR Code:</strong><br>
+                    <img src="/pj/digitalActivityBook/<?= htmlspecialchars($user['std_qr_code']) ?>" alt="QR Code" width="100">
+                    </p>
+                <?php endif; ?>
+            </div>
+            <div class="col-8">
+                <h2>กิจกรรมที่เข้าร่วม</h2>
+                <?php if (count($events) > 0): ?>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>ลำดับ</th>
+                                <th>ชื่อกิจกรรม</th>
+                                <th>แต้มกิจกรรม</th>
+                                <th>สถานะ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($events as $index => $event): ?>
+                                <tr class="text-center">
+                                    <td><?= $index + 1 ?></td>
+                                    <td><?= htmlspecialchars($event['event_name']) ?></td>
+                                    <td><?= htmlspecialchars($event['event_point']) ?></td>
+                                    <td class="<?= $event['check_status'] ? 'status-true' : 'status-false' ?>">
+                                        <?= $event['check_status'] ? 'เข้าร่วมแล้ว' : 'ยังไม่เข้าร่วม' ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <p><strong>แต้มกิจกรรมรวมทั้งหมด:</strong> <?= $updated_points ?></p>
+                <?php else: ?>
+                <p>ยังไม่มีกิจกรรมที่เข้าร่วม</p>
+                <?php endif; ?>
+            </div>
+        </div>
     </div>
 </body>
 </html>
