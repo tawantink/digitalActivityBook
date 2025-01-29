@@ -22,7 +22,7 @@ include('layout.php');
 <div class="container">
     <?php
     // ดึงข้อมูลกิจกรรมจากฐานข้อมูล
-    $sql = "SELECT id, event_name, event_descrip, event_point FROM events WHERE event_date = ?";
+    $sql = "SELECT event_id, event_name, event_descrip, event_point FROM events WHERE event_date = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $date);
     $stmt->execute();
@@ -50,13 +50,13 @@ include('layout.php');
         // เริ่มต้นลำดับ
         $index = 1;
         while ($row = $result->fetch_assoc()) {
-            echo "<tr onclick='goToDetail(" . $row["id"] . ")'>";
+            echo "<tr onclick='goToDetail(" . $row["event_id"] . ")'>";
             echo "<td>" . $index++ . "</td>";
             echo "<td>" . htmlspecialchars($row['event_name']) . "</td>";
-            echo "<td>" . htmlspecialchars($row['event_descrip']) . "</td>";
+            echo "<td class='w-50 text-start'>" . htmlspecialchars($row['event_descrip']) . "</td>";
             echo "<td>" . htmlspecialchars($row['event_point']) . "</td>";
             echo "<td>";
-            echo "<a href='delete_event.php?id=" . $row["id"] . "' class='action-btn delete-btn' onclick='return confirm(\"คุณต้องการลบกิจกรรมนี้หรือไม่?\")'>ลบ</a>";
+            echo "<a href='delete_event.php?event_id=" . $row["event_id"] . "' class='action-btn delete-btn' onclick='return confirm(\"คุณต้องการลบกิจกรรมนี้หรือไม่?\")'>ลบ</a>";
             echo "</td>";
             echo "</tr>";
         }
@@ -114,7 +114,7 @@ include('layout.php');
 <script>
     // ฟังก์ชันสำหรับนำผู้ใช้ไปยังหน้ารายละเอียดเมื่อคลิกที่แถว
     function goToDetail(eventId) {
-        window.location.href = 'event_detail.php?id=' + eventId;
+        window.location.href = 'event_detail.php?event_id=' + eventId;
     }
 </script>
 
