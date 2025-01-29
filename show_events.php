@@ -3,7 +3,7 @@
 include 'configCon.php';
 
 // คำสั่ง SQL เพื่อดึงข้อมูลจากตาราง events และเรียงลำดับตามวันที่จากน้อยไปมาก
-$sql = "SELECT id, event_date, event_name, event_descrip, event_point FROM events ORDER BY event_date ASC";
+$sql = "SELECT event_id, event_date, event_name, event_descrip, event_point FROM events ORDER BY event_date ASC";
 $result = $conn->query($sql);
 ?>
 
@@ -54,7 +54,7 @@ include('layout.php');
     <script>
         // ฟังก์ชันสำหรับนำผู้ใช้ไปยังหน้ารายละเอียดเมื่อคลิกที่แถว
         function goToDetail(eventId) {
-            window.location.href = 'event_detail.php?id=' + eventId;
+            window.location.href = 'event_detail.php?event_id=' + eventId;
         }
     </script>
 </head>
@@ -81,14 +81,14 @@ include('layout.php');
                         $dateObj = DateTime::createFromFormat('Y-m-d', $row['event_date']);
                         $formattedDate = $dateObj->format('d/m/Y');
 
-                        echo "<tr onclick='goToDetail(" . $row["id"] . ")'>"; // ใช้ onclick เรียกฟังก์ชัน
+                        echo "<tr onclick='goToDetail(" . $row["event_id"] . ")'>"; // ใช้ onclick เรียกฟังก์ชัน
                         echo "<td>" . $index . "</td>";
                         echo "<td>" . $formattedDate . "</td>";
                         echo "<td>" . htmlspecialchars($row["event_name"]) . "</td>";
                         echo "<td>" . htmlspecialchars($row["event_descrip"]) . "</td>";
                         echo "<td>" . htmlspecialchars($row["event_point"]) . "</td>";
                         echo "<td>";
-                        echo "<a href='delete_event.php?id=" . $row["id"] . "' class='action-btn delete-btn' onclick='return confirm(\"คุณต้องการลบกิจกรรมนี้หรือไม่?\")'>ลบ</a>";
+                        echo "<a href='delete_event.php?event_id=" . $row["event_id"] . "' class='action-btn delete-btn' onclick='return confirm(\"คุณต้องการลบกิจกรรมนี้หรือไม่?\")'>ลบ</a>";
                         echo "</td>";
                         echo "</tr>";
 
