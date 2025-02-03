@@ -5,7 +5,7 @@ include 'configCon.php';
 // รับค่าจาก URL
 $id = isset($_GET['event_id']) ? $_GET['event_id'] : null;
 if (!$id) {
-    echo "Invalid request! The 'id' parameter is missing.";
+    echo "Invalid request! The 'event_id' parameter is missing.";
     exit;
 }
 
