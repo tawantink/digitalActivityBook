@@ -37,13 +37,12 @@ $title = "Admin Dashboard";
 include('layout1.php');
 ?>
 <body>
-    <div class="container">
+    <div class="container"><br>
         <h1>Admin Dashboard</h1>
-        <p>You are logged in as Admin ID: <?php echo $_SESSION['admin_id']; ?></p>
-        
+        <hr>
         <!-- การแสดงวันที่ปัจจุบันแบบเรียลไทม์ -->
         <p id="current-date" style="font-size: 18px; font-weight: bold; color: #007BFF;"></p>
-        
+        <br>
         <?php
         // รับค่าจาก URL (query string) หรือใช้เดือนและปีปัจจุบันเป็นค่าเริ่มต้น
         $month = isset($_GET['month']) && intval($_GET['month']) >= 1 && intval($_GET['month']) <= 12 ? intval($_GET['month']) : date("m");
@@ -67,7 +66,7 @@ include('layout1.php');
 
         // ฟังก์ชันสร้างปฏิทิน
         function generateCalendar($month, $year, $event_dates) {
-            $daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            $daysOfWeek = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
             $firstDayOfMonth = mktime(0, 0, 0, $month, 1, $year);
             $numberOfDays = date("t", $firstDayOfMonth);
             $dateComponents = getdate($firstDayOfMonth);
@@ -125,8 +124,8 @@ include('layout1.php');
 
         // ปุ่มเปลี่ยนเดือน
         echo "<div style='text-align: center;'>";
-        echo "<a href='?month=$prevMonth&year=$prevYear'><button class='button1'>Previous Month</button></a>";
-        echo "<a href='?month=$nextMonth&year=$nextYear'><button class='button2'>Next Month</button></a>";
+        echo "<a href='?month=$prevMonth&year=$prevYear'><button class='button1'>เดือนก่อนหน้า</button></a>";
+        echo "<a href='?month=$nextMonth&year=$nextYear'><button class='button2'>เดือนถัดไป</button></a>";
         echo "</div>";
 
         // สร้างปฏิทิน
@@ -139,7 +138,7 @@ include('layout1.php');
         function updateCurrentDate() {
             const now = new Date();
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById("current-date").innerText = "Today: " + now.toLocaleDateString('en-US', options);
+            document.getElementById("current-date").innerText = "วันนี้ : " + now.toLocaleDateString('th-Thai', options);
         }
         updateCurrentDate();
         setInterval(updateCurrentDate, 1000); // อัปเดตทุกวินาที
