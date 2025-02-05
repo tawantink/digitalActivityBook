@@ -68,10 +68,11 @@ include('layout.php');
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container"><br>
+    <h1>รายละเอียดกิจกรรม : <?= htmlspecialchars($event['event_name']) ?></h1>
+    <hr>
         <div class="row">
             <div class="col-7">
-                <h1>รายละเอียดกิจกรรม : <?= htmlspecialchars($event['event_name']) ?></h1>
                 <p><strong>วันที่จัดกิจกรรม:</strong> <?= (new DateTime($event['event_date']))->format('d/m/Y') ?></p>
                 <p><strong>รายละเอียด:</strong> <?= htmlspecialchars($event['event_descrip']) ?></p>
                 <p><strong>แต้มกิจกรรม:</strong> <?= htmlspecialchars($event['event_point']) ?></p>
@@ -104,7 +105,7 @@ include('layout.php');
                                 <tr class="text-center">
                                     <td><?= $index + 1 ?></td>
                                     <td><?= htmlspecialchars($student['username']) ?></td>
-                                    <td><?= htmlspecialchars($student['fullname']) ?></td>
+                                    <td class="text-start"><?= htmlspecialchars($student['fullname']) ?></td>
                                     <td><?= $student['check_status'] == 1 ? 'เข้าร่วมแล้ว' : 'ยังไม่เข้าร่วม' ?></td>
                                 </tr>
                             <?php endforeach; ?>
