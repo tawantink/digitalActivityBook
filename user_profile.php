@@ -78,8 +78,9 @@ include('layout.php'); ?>
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Profile of <?= htmlspecialchars($user['username']) ?></h1>
+    <div class="container"><br>
+        <h1>ข้อมูลกิจกรรมของ <?= htmlspecialchars($user['fullname']) ?></h1>
+        <hr>
         <div class="row">
             <div class="col-4">
                 <?php if ($user['avatar']): ?>
