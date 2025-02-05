@@ -85,7 +85,7 @@ include('layout.php');
                         echo "<td>" . $index . "</td>";
                         echo "<td>" . $formattedDate . "</td>";
                         echo "<td>" . htmlspecialchars($row["event_name"]) . "</td>";
-                        echo "<td>" . htmlspecialchars($row["event_descrip"]) . "</td>";
+                        echo "<td class='text-start'>" . htmlspecialchars($row["event_descrip"]) . "</td>";
                         echo "<td>" . htmlspecialchars($row["event_point"]) . "</td>";
                         echo "<td>";
                         echo "<a href='delete_event.php?event_id=" . $row["event_id"] . "' class='action-btn delete-btn' onclick='return confirm(\"คุณต้องการลบกิจกรรมนี้หรือไม่?\")'>ลบ</a>";
