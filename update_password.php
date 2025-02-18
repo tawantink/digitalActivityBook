@@ -8,8 +8,8 @@ $newPassword = '1234'; // รหัสผ่านใหม่ที่ต้อ
 $passwordHash = password_hash($newPassword, PASSWORD_DEFAULT);
 
 // อัปเดตรหัสผ่านในฐานข้อมูลสำหรับทุกผู้ใช้
-$stmt = $pdo->prepare("UPDATE users SET password_hash = ?");
+$stmt = $pdo->prepare("UPDATE admin SET admin_password = ?");
 $stmt->execute([$passwordHash]);
 
-echo "Password updated for all users successfully.";
+echo "Password updated for all admin successfully.";
 ?>
