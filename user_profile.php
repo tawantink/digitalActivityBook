@@ -91,11 +91,6 @@ include('layout.php'); ?>
                 <p><strong>ชั้นปี :</strong> <?= htmlspecialchars($user['class']) ?></p>
                 <p><strong>แผนกวิชา :</strong> <?= htmlspecialchars($user['department']) ?></p>
                 <p><strong>จำนวนแต้มกิจกรรม :</strong> <?= htmlspecialchars($updated_points) ?></p>
-                <?php if (!empty($user['std_qr_code'])): ?>
-                    <p><strong>QR Code:</strong><br>
-                    <img src="/pj/digitalActivityBook/<?= htmlspecialchars($user['std_qr_code']) ?>" alt="QR Code" width="100">
-                    </p>
-                <?php endif; ?>
             </div>
             <div class="col-8">
                 <h2>กิจกรรมที่เข้าร่วม</h2>
