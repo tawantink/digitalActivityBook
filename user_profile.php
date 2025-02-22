@@ -54,6 +54,11 @@ $update_stmt->bind_param("ii", $updated_points, $user_id);
 $update_stmt->execute();
 $update_stmt->close();
 
+// ดึงค่า activity_points จากตาราง settings สำหรับปีและเทอมที่สูงสุด
+$sql = "SELECT activity_points FROM settings ORDER BY year DESC, term DESC LIMIT 1";
+$result_settings = $conn->query($sql);
+$activity_points = $result_settings->num_rows > 0 ? $result_settings->fetch_assoc()['activity_points'] : 0;
+
 $conn->close();
 ?>
 
@@ -80,7 +85,7 @@ include('layout.php'); ?>
 <body>
     <div class="container"><br>
         <h1>ข้อมูลกิจกรรมของ <?= htmlspecialchars($user['fullname']) ?></h1>
-        <hr>
+        <hr><br>
         <div class="row">
             <div class="col-4">
                 <?php if ($user['avatar']): ?>
@@ -91,9 +96,16 @@ include('layout.php'); ?>
                 <p><strong>ชั้นปี :</strong> <?= htmlspecialchars($user['class']) ?></p>
                 <p><strong>แผนกวิชา :</strong> <?= htmlspecialchars($user['department']) ?></p>
                 <p><strong>จำนวนแต้มกิจกรรม :</strong> <?= htmlspecialchars($updated_points) ?></p>
+                <p><strong>สถานะกิจกรรม :</strong> 
+                    <?php if ($updated_points >= $activity_points): ?>
+                        <span style="color: green; font-size: 40px;"><b>ผ่าน</b></span>
+                    <?php else: ?>
+                        <span style="color: red; font-size: 40px;"><b>ไม่ผ่าน</b></span>
+                    <?php endif; ?>
+                </p>
             </div>
             <div class="col-8">
-                <h2>กิจกรรมที่เข้าร่วม</h2>
+                <h2>กิจกรรมวิทยาลัยที่เข้าร่วม</h2>
                 <?php if (count($events) > 0): ?>
                     <table class="table table-bordered">
                         <thead>
