@@ -1,4 +1,5 @@
 <?php
+// filepath: /c:/xampp/htdocs/pj/digitalActivityBook/admin_dashboard.php
 // เชื่อมต่อฐานข้อมูล
 include 'configCon.php';
 
@@ -17,6 +18,35 @@ if ($result->num_rows > 0) {
         $event_dates[] = $row['event_date'];
     }
 }
+
+// ดึงเทอมและปีการศึกษาจากตาราง settings และเรียงลำดับจากมากไปน้อยด้วย year
+$sql = "SELECT DISTINCT term, year FROM settings ORDER BY year DESC, term DESC";
+$result = $conn->query($sql);
+
+$terms = [];
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $terms[] = $row['term'] . '/' . $row['year'];
+    }
+}
+
+// กำหนดเทอมและปีการศึกษาปัจจุบัน
+$current_term = isset($_GET['term']) ? $_GET['term'] : (count($terms) > 0 ? $terms[0] : '');
+
+// ตรวจสอบรูปแบบของ $current_term ก่อนทำการแยกสตริง
+if (strpos($current_term, '/') !== false) {
+    list($current_term_value, $current_year) = explode('/', $current_term);
+} else {
+    $current_term_value = '';
+    $current_year = '';
+}
+
+$sql = "SELECT activity_points FROM settings WHERE term = ? AND year = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ss", $current_term_value, $current_year); // ใช้ประเภท "ss" สำหรับ term และ year
+$stmt->execute();
+$result = $stmt->get_result();
+$activity_points = $result->num_rows > 0 ? $result->fetch_assoc()['activity_points'] : 0;
 
 // ปิดการเชื่อมต่อ
 $conn->close();
@@ -42,6 +72,33 @@ include('layout1.php');
         <hr>
         <!-- การแสดงวันที่ปัจจุบันแบบเรียลไทม์ -->
         <p id="current-date" style="font-size: 18px; font-weight: bold; color: #007BFF;"></p>
+        <!-- แสดง dropdown สำหรับเลือกเทอมและปีการศึกษา -->
+        <form method="get" action="admin_dashboard.php" class="mb-4 d-flex align-items-center">
+            <label style="font-size: 30px;">ภาคเรียน/ปีการศึกษา :&nbsp;&nbsp;</label>
+            <div style="font-size: 30px;" class="form-group mr-3">
+                <select class="form-control" id="term" name="term" onchange="this.form.submit()" style="width: auto;">
+                    <?php foreach ($terms as $term): ?>
+                        <option value="<?= htmlspecialchars($term) ?>" <?= $term == $current_term ? 'selected' : '' ?>><?= htmlspecialchars($term) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <!-- แสดงแต้มกิจกรรม -->
+            <label style="font-size: 30px;">&nbsp;&nbsp;แต้มกิจกรรมผ่านเกณฑ์ประจำภาคเรียน :&nbsp;&nbsp;</label>
+            <div class="form-group mr-3">
+                <span style="font-size: 30px;" id="current-activity-points"><?= htmlspecialchars($activity_points) ?></span>
+                &nbsp;&nbsp;
+                <button type="button" class="btn btn-warning btn-sm mb-2" onclick="toggleEditForm()">แก้ไขแต้มกิจกรรม</button>
+                <!-- ปุ่มเพิ่มภาคเรียน/ปีการศึกษา -->
+                <a href="add_term_form.php" class="btn btn-success btn-sm mb-2">เพิ่มภาคเรียน/ปีการศึกษา</a>
+            </div>
+        </form>
+        <!-- ฟอร์มแก้ไขแต้มกิจกรรม (ซ่อนโดยค่าเริ่มต้น) -->
+        <form id="edit-activity-points-form" method="post" action="save_activity_points.php" style="display: none; margin-top: 10px;">แก้ไขแต้มกิจกรรม :
+            <input type="hidden" name="term" value="<?= htmlspecialchars($current_term_value) ?>">
+            <input type="hidden" name="year" value="<?= htmlspecialchars($current_year) ?>">
+            <input type="number" id="new-activity-points" name="activity_points" class="form-control" value="<?= htmlspecialchars($activity_points) ?>" style="width: 100px; display: inline;">
+            <button type="submit" class="btn btn-primary btn-sm">บันทึก</button>
+        </form>
         <br>
         <?php
         // รับค่าจาก URL (query string) หรือใช้เดือนและปีปัจจุบันเป็นค่าเริ่มต้น
@@ -142,6 +199,37 @@ include('layout1.php');
         }
         updateCurrentDate();
         setInterval(updateCurrentDate, 1000); // อัปเดตทุกวินาที
+
+        function toggleEditForm() {
+            const form = document.getElementById('edit-activity-points-form');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function updateActivityPoints() {
+            const newPoints = document.getElementById('new-activity-points').value;
+            const term = document.getElementById('current-term').value;
+
+            if (newPoints === "" || isNaN(newPoints)) {
+                alert("กรุณากรอกแต้มกิจกรรมที่ถูกต้อง");
+                return;
+            }
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "save_activity_points.php", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    document.getElementById('current-activity-points').innerText = newPoints;
+                    toggleEditForm();
+                }
+            };
+            xhr.send("term=" + term + "&year=" + document.getElementById('current-year').value + "&activity_points=" + newPoints);
+        }
+
+        function toggleAddTermForm() {
+            const form = document.getElementById('add-term-form');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
     </script>
 </body>
 <?php include('footer.php'); ?>
