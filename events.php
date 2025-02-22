@@ -29,7 +29,7 @@ include('layout.php');
     $result = $stmt->get_result();
 
     // แสดงกิจกรรมในรูปแบบตาราง
-    echo "<h2>กิจกรรมประจำวันที่ $formattedDate</h2>";
+    echo "<br><h2>กิจกรรมประจำวันที่ $formattedDate</h2><hr>";
     // ปุ่มเพิ่มกิจกรรม
     echo "<br><a href='add_event.php?date=" . htmlspecialchars($date) . "'><button class='cta'><span><svg height='24' width='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M0 0h24v24H0z' fill='none'></path><path d='M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z' fill='currentColor'></path></svg>Create</span></button></a> <br><br>";
 
