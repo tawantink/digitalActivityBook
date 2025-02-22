@@ -65,6 +65,12 @@ include('layout.php');
         .btn {
             margin: 5px 0;
         }
+        .status-true {
+            color: green;
+        }
+        .status-false {
+            color: red;
+        }
     </style>
 </head>
 <body>
@@ -106,7 +112,9 @@ include('layout.php');
                                     <td><?= $index + 1 ?></td>
                                     <td><?= htmlspecialchars($student['username']) ?></td>
                                     <td class="text-start"><?= htmlspecialchars($student['fullname']) ?></td>
-                                    <td><?= $student['check_status'] == 1 ? 'เข้าร่วมแล้ว' : 'ยังไม่เข้าร่วม' ?></td>
+                                    <td class="<?= $student['check_status'] == 1 ? 'status-true' : 'status-false' ?>">
+                                        <?= $student['check_status'] == 1 ? 'เข้าร่วมแล้ว' : 'ยังไม่เข้าร่วม' ?>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -116,9 +124,6 @@ include('layout.php');
                 <?php endif; ?>
             </div>
         </div>
-        
-
-        
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
