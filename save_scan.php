@@ -36,10 +36,10 @@ if ($result->num_rows > 0) {
             echo json_encode(['success' => false, 'message' => 'ไม่สามารถอัปเดตข้อมูลได้']);
         }
     } else {
-        echo json_encode(['success' => false, 'message' => 'ไม่พบข้อมูลที่ตรงกันในตาราง history']);
+        echo json_encode(['success' => false, 'message' => 'ไม่พบข้อมูลการลงทะเบียนของนักศึกษา']);
     }
 } else {
-    echo json_encode(['success' => false, 'message' => 'ไม่พบข้อมูลที่ตรงกันในตาราง users']);
+    echo json_encode(['success' => false, 'message' => 'ไม่พบข้อมูลนักศึกษา']);
 }
 
 $stmt->close();
