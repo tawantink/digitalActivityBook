@@ -1,7 +1,0 @@
-หากต้องการรันทดสอบ
-ให้ติดตั้ง XAMPP และนำไฟล์ไปไว้ใน C:\xampp\htdocs จากนั้นเข้า url localhost/digitalActivityBook/index.php
-นำไฟล์ dump-llqkum01lyw1bhs6-202502281615.sql import เข้าไปใน phpmyadmin
-ในไฟล์ config.php และ configCon.php ให้เปลี่ยน host เป็น localhost นอกเหนือจากนั้นสามารถเปลี่ยนชื่อ database username password ได้ตามที่ต้องการ
-
-แต่หากต้องการใช้ database เดิมของ Project นี้สำหรับเชื่อมต่อเว็บและแอพพลิเคชั่นเข้าด้วยกันแบบเรียลไทม์ ให้ติดตั้ง DBeaver มาใช้งาน สามารถหาวิธีการใช้งานได้ตาม Youtube เลย //เรียนรู้ด้วยตัวเองซะ ข้อมูล host db user pass มีในไฟล์ config แล้ว
-จากนั้น import ไฟล์ dump-llqkum01lyw1bhs6-202502281615.csv เข้าไปใน DBeaver วิธีจะทำให้ให้ไฟล์ sql เป็น csv ก็...ไปตามหาเอาเอง รวมถึงพวก pk fk หากผิดพลาดลองศึกษาหาวิธีเอา เด็กเทคคอมเก่ง ๆ กันอยู่แล้ว
